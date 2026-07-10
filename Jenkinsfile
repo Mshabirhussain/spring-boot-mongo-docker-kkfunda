@@ -125,28 +125,37 @@ pipeline {
 
 
         stage('Deploy Container') {
-
-
             steps {
-
-
-                sh '''
-
-                docker stop ${APP_NAME} || true
-
-                docker rm ${APP_NAME} || true
-
-
-                docker run -d \
-                --name ${APP_NAME} \
-                -p 8085:8080 \
-                ${IMAGE_NAME}:${BUILD_NUMBER}
-
-
-                '''
-
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'mongodb-creds',
+                        usernameVariable: 'MONGO_USER',
+                        passwordVariable: 'MONGO_PASS'
+                    )
+                ]) {
+                    sh '''
+                        docker rm -f spring-boot-app || true
+                        docker rm -f mongo || true
+        
+                        docker run -d \
+                          --name mongo \
+                          --network devops \
+                          -p 27017:27017 \
+                          -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USER \
+                          -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASS \
+                          mongo:7.0.9
+        
+                        sleep 20
+        
+                        docker run -d \
+                          --name spring-boot-app \
+                          --network devops \
+                          -p 8085:8080 \
+                          -e SPRING_DATA_MONGODB_URI="mongodb://$MONGO_USER:$MONGO_PASS@mongo:27017/admin" \
+                          localhost:8082/docker-hosted/spring-boot-mongo:${BUILD_NUMBER}
+                    '''
+                }
             }
-
         }
 
 
