@@ -146,13 +146,13 @@ pipeline {
                     sleep 20
         
                     docker run -d \
-                    --name spring-boot-app \
-                    --network devops \
-                    -p 8085:8080 \
-                    -e mongo_db_hostname=mongo \
-                    -e mongo_db_username=devdb \
-                    -e mongo_db_password=$MONGO_PASS \
-                    localhost:8082/docker-hosted/spring-boot-mongo:${BUILD_NUMBER}
+                     --name spring-boot-app \
+                     --network devops \
+                     -p 8085:8080 \
+                     -e MONGO_DB_HOSTNAME=mongo \
+                     -e MONGO_DB_USERNAME=devdb \
+                     -e MONGO_DB_PASSWORD="$MONGO_PASS" \
+                     localhost:8082/docker-hosted/spring-boot-mongo:18
                     '''
                 }
             }
