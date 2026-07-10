@@ -10,7 +10,9 @@ pipeline {
 
         APP_NAME = "spring-boot-mongo"
 
-        IMAGE_NAME = "localhost:8082/${APP_NAME}"
+        // IMAGE_NAME = "localhost:8082/${APP_NAME}"
+
+        IMAGE_NAME = "localhost:8082/docker-hosted/spring-boot-mongo"
 
         SONAR_HOME = tool 'SonarScanner'
 
@@ -152,7 +154,7 @@ pipeline {
                           --network devops \
                           -p 8085:8080 \
                           -e SPRING_DATA_MONGODB_URI="mongodb://$MONGO_USER:$MONGO_PASS@mongo:27017/admin" \
-                          localhost:8082/docker-hosted/spring-boot-mongo:${BUILD_NUMBER}
+                          ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
             }
