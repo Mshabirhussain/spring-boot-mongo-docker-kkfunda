@@ -49,22 +49,24 @@ pipeline {
 
 
         stage('SonarQube Analysis') {
-
+        
+            environment {
+                scannerHome = tool 'SonarScanner'
+            }
+        
             steps {
-
+        
                 withSonarQubeEnv('sonarqube') {
-
-                    sh '''
-
-                    mvn sonar:sonar \
-                    -Dsonar.projectKey=${APP_NAME} \
-                    -Dsonar.host.url=http://sonarqube:9000 \
-                    -Dsonar.login=$SONAR_TOKEN
-
-                    '''
-
+        
+                    sh """
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=spring-boot-mongo \
+                    -Dsonar.projectName=spring-boot-mongo \
+                    -Dsonar.sources=src \
+                    -Dsonar.java.binaries=target/classes
+                    """
+        
                 }
-
             }
         }
 
