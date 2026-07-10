@@ -129,32 +129,30 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 withCredentials([
-                    usernamePassword(
-                        credentialsId: 'mongodb-creds',
-                        usernameVariable: 'MONGO_USER',
-                        passwordVariable: 'MONGO_PASS'
-                    )
+                    string(credentialsId: 'mongo-password', variable: 'MONGO_PASS')
                 ]) {
                     sh '''
-                        docker rm -f spring-boot-app || true
-                        docker rm -f mongo || true
+                    docker rm -f spring-boot-app spring-boot-mongo || true
+                    docker rm -f mongo || true
         
-                        docker run -d \
-                          --name mongo \
-                          --network devops \
-                          -p 27017:27017 \
-                          -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USER \
-                          -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASS \
-                          mongo:7.0.9
+                    docker run -d \
+                    --name mongo \
+                    --network devops \
+                    -p 27017:27017 \
+                    -e MONGO_INITDB_ROOT_USERNAME=devdb \
+                    -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASS \
+                    mongo:7.0.9
         
-                        sleep 20
+                    sleep 20
         
-                        docker run -d \
-                          --name spring-boot-app \
-                          --network devops \
-                          -p 8085:8080 \
-                          -e SPRING_DATA_MONGODB_URI="mongodb://$MONGO_USER:$MONGO_PASS@mongo:27017/admin" \
-                          ${IMAGE_NAME}:${BUILD_NUMBER}
+                    docker run -d \
+                    --name spring-boot-app \
+                    --network devops \
+                    -p 8085:8080 \
+                    -e mongo_db_hostname=mongo \
+                    -e mongo_db_username=devdb \
+                    -e mongo_db_password=$MONGO_PASS \
+                    localhost:8082/docker-hosted/spring-boot-mongo:${BUILD_NUMBER}
                     '''
                 }
             }
